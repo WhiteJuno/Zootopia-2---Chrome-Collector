@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zootopia 2 Chromes</title>
+    <style>
+        /* CSS: Mobile-first styling */
+        :root {
+            --green: #4CAF50;
+            --gray: #9E9E9E;
+            --gold: #FFD700;
+            --orange: #FF9800;
+            --bg-overlay: rgba(30, 30, 30, 0.85); /* Dark overlay to make text readable */
+            --panel: #2a2a2a;
+            --nav-bg: #1a1a1a;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            /* Background Image Setup */
+            background: url('bg.png') no-repeat center center fixed;
+            background-size: cover;
+            /* Extra padding at the bottom so content isn't hidden behind the nav bar */
+            padding-bottom: 80px; 
+        }
+
+        /* Dark overlay over the background image for readability */
+        .app-container {
+            min-height: 100vh;
+            background-color: var(--bg-overlay);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Top Logo */
+        .app-logo {
+            max-width: 200px;
+            height: auto;
+            display: block;
+            margin: 10px auto 30px auto;
+        }
+
+        /* View Management (Home, Search, Library) */
+        .view {
+            display: none; /* Hidden by default */
+            width: 100%;
+            max-width: 400px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .view.active {
+            display: flex; /* Only the active view is shown */
+        }
+
+        /* Stats (Home View) */
+        .stats-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .collected-num {
+            font-size: 6rem;
+            font-weight: 800;
+            color: var(--green);
+            line-height: 1;
+        }
+
+        .missing-num {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Search View */
+        .controls-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #444;
+            border-radius: 12px;
+            background: var(--panel);
+            color: white;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--green);
+        }
+
+        .btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 12px;
+            background-color: #444;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            background-color: #555;
+        }
+
+        #searchResult {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin: 10px 0;
+        }
+
+        /* Library View */
+        .library-container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .chrome-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1rem;
+        }
+
+        /* Bottom Navigation Menu */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .nav-btn.active {
+            color: var(--green);
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Color Coding */
+        .status-missing { background-color: var(--gray); color: #222; }
+        .status-collected-normal { background-color: var(--green); color: white; }
+        .status-collected-p { background-color: var(--orange); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <img src="logo.png" alt="Zootopia 2 Logo" class="app-logo" onerror="this.style.display='none'">
+
+        <div id="view-home" class="view active">
+            <div class="stats-container">
+                <div class="collected-num" id="collectedCount">0</div>
+                <div class="missing-num" id="missingCount">204 missing</div>
+            </div>
+        </div>
+
+        <div id="view-search" class="view">
+            <div class="controls-container">
+                <input type="text" id="searchInput" placeholder="Enter number (e.g., 5 or P3)">
+                <button class="btn" onclick="searchChrome()">Search Database</button>
+                <div id="searchResult"></div>
+            </div>
+        </div>
+
+        <div id="view-library" class="view">
+            <div class="library-container" id="library">
+                </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" id="nav-search" onclick="switchView('search')">
+            🔍<span class="nav-label">Search</span>
+        </button>
+        <button class="nav-btn active" id="nav-home" onclick="switchView('home')">
+            🏠<span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" id="nav-library" onclick="switchView('library')">
+            📚<span class="nav-label">Library</span>
+        </button>
+    </div>
+
+    <script>
+        const totalNormal = 188;
+        const totalP = 16;
+        let collectedChromes = new Set();
+
+        // Load saved data from local storage
+        const savedData = localStorage.getItem('zootopia2Chromes');
+        if (savedData) {
+            collectedChromes = new Set(JSON.parse(savedData));
+        }
+
+        // View Navigation Logic
+        function switchView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            
+            // Remove active styling from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected view and highlight button
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+
+            // If library is opened, render it
+            if (viewName === 'library') {
+                renderLibrary();
+            }
+        }
+
+        function saveDatabase() {
+            localStorage.setItem('zootopia2Chromes', JSON.stringify([...collectedChromes]));
+        }
+
+        function updateStats() {
+            const total = totalNormal + totalP;
+            const collected = collectedChromes.size;
+            document.getElementById('collectedCount').innerText = collected;
+            document.getElementById('missingCount').innerText = `${total - collected} missing`;
+        }
+
+        function searchChrome() {
+            let input = document.getElementById('searchInput').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('searchResult');
+
+            if (!input) {
+                resultDiv.innerText = "";
+                return;
+            }
+
+            if (collectedChromes.has(input)) {
+                resultDiv.style.color = 'var(--green)';
+                resultDiv.innerText = `${input} - You already have it!`;
+            } else {
+                resultDiv.style.color = 'var(--gold)';
+                resultDiv.innerText = `${input} - You need this one!`;
+            }
+        }
+
+        function toggleChrome(id) {
+            if (collectedChromes.has(id)) {
+                collectedChromes.delete(id);
+            } else {
+                collectedChromes.add(id);
+            }
+            saveDatabase();
+            updateStats();
+            renderLibrary(); 
+            
+            if(document.getElementById('searchInput').value) {
+                searchChrome();
+            }
+        }
+
+        function renderLibrary() {
+            const lib = document.getElementById('library');
+            lib.innerHTML = '';
+
+            for (let i = 1; i <= totalNormal; i++) {
+                const id = i.toString();
+                lib.appendChild(createChromeElement(id, false));
+            }
+
+            for (let i = 1; i <= totalP; i++) {
+                const id = `P${i}`;
+                lib.appendChild(createChromeElement(id, true));
+            }
+        }
+
+        function createChromeElement(id, isP) {
+            const el = document.createElement('div');
+            el.className = 'chrome-item ';
+            el.innerText = id;
+
+            if (collectedChromes.has(id)) {
+                el.className += isP ? 'status-collected-p' : 'status-collected-normal';
+            } else {
+                el.className += 'status-missing';
+            }
+
+            el.onclick = () => toggleChrome(id);
+            return el;
+        }
+
+        // Initialize application stats on load
+        updateStats();
+    </script>
+</body>
+</html>
